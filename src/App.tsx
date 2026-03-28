@@ -1,4 +1,5 @@
 import { AnimatePresence, motion } from 'framer-motion'
+import type { FormEvent } from 'react'
 import { useEffect, useRef, useState } from 'react'
 import {
   BellRing,
@@ -147,64 +148,131 @@ const responseStates = [
   },
 ]
 
-const DEFAULT_JOIN_DELAY_MS = 12000
+const gmailPattern = /^[a-z0-9._%+-]+@gmail\.com$/i
+
+type FeedbackTone = 'success' | 'info' | 'error'
+
+type FeedbackState = {
+  tone: FeedbackTone
+  message: string
+}
 
 function App() {
-  const [joinState, setJoinState] = useState<'idle' | 'waiting' | 'confirmed'>('idle')
-  const [cooldownSecondsLeft, setCooldownSecondsLeft] = useState(0)
-  const cooldownIntervalRef = useRef<number | null>(null)
-  const groupJoinUrl = (import.meta.env.VITE_GOOGLE_GROUP_JOIN_URL ?? '').trim()
+  const [email, setEmail] = useState('')
+  const [feedback, setFeedback] = useState<FeedbackState | null>(null)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [showTestLink, setShowTestLink] = useState(false)
+  const [didCopyPlayLink, setDidCopyPlayLink] = useState(false)
+  const copiedTimerRef = useRef<number | null>(null)
   const playTestUrl = (import.meta.env.VITE_PLAY_TEST_URL ?? '').trim()
-  const configuredJoinDelayMs = Number(import.meta.env.VITE_GROUP_JOIN_DELAY_MS ?? DEFAULT_JOIN_DELAY_MS)
-  const joinDelayMs =
-    Number.isFinite(configuredJoinDelayMs) && configuredJoinDelayMs > 0
-      ? configuredJoinDelayMs
-      : DEFAULT_JOIN_DELAY_MS
-  const isJoinConfigured = Boolean(groupJoinUrl)
+  const apiBaseUrl = (import.meta.env.VITE_API_BASE_URL ?? '').replace(/\/$/, '')
   const isPlayLinkConfigured = Boolean(playTestUrl)
+  const normalizedEmail = email.trim()
+  const isValidGmail = gmailPattern.test(normalizedEmail)
 
   useEffect(() => {
     return () => {
-      if (cooldownIntervalRef.current !== null) {
-        window.clearInterval(cooldownIntervalRef.current)
+      if (copiedTimerRef.current !== null) {
+        window.clearTimeout(copiedTimerRef.current)
       }
     }
   }, [])
 
-  const handleJoinGroup = () => {
-    if (!isJoinConfigured) {
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+
+    // #region agent log
+    fetch('http://127.0.0.1:7316/ingest/70f095ac-22c5-4dce-af96-a83c9dce107e',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'76fb6e'},body:JSON.stringify({sessionId:'76fb6e',runId:'initial',hypothesisId:'H5',location:'src/App.tsx:184',message:'Submit started',data:{isValidGmail,hasApiBaseUrl:Boolean(apiBaseUrl),hasPlayTestUrl:isPlayLinkConfigured,emailDomain:normalizedEmail.split('@')[1] ?? null},timestamp:Date.now()})}).catch(()=>{});
+    // #endregion
+
+    if (!isValidGmail) {
+      setFeedback({
+        tone: 'error',
+        message: 'Please enter a valid Gmail address ending in @gmail.com.',
+      })
+      setShowTestLink(false)
       return
     }
 
-    if (cooldownIntervalRef.current !== null) {
-      window.clearInterval(cooldownIntervalRef.current)
-    }
+    setIsSubmitting(true)
+    setFeedback(null)
+    setDidCopyPlayLink(false)
 
-    setJoinState('waiting')
-    setCooldownSecondsLeft(Math.ceil(joinDelayMs / 1000))
-    window.open(groupJoinUrl, '_blank', 'noopener,noreferrer')
-
-    cooldownIntervalRef.current = window.setInterval(() => {
-      setCooldownSecondsLeft((currentValue) => {
-        if (currentValue <= 1) {
-          if (cooldownIntervalRef.current !== null) {
-            window.clearInterval(cooldownIntervalRef.current)
-            cooldownIntervalRef.current = null
-          }
-          return 0
-        }
-
-        return currentValue - 1
+    try {
+      const response = await fetch(`${apiBaseUrl}/api/testers`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email: normalizedEmail }),
       })
-    }, 1000)
+
+      const data = await response.json().catch(() => null)
+      const message =
+        typeof data?.message === 'string'
+          ? data.message
+          : 'We could not add your Gmail right now. Please try again later.'
+
+      // #region agent log
+      fetch('http://127.0.0.1:7316/ingest/70f095ac-22c5-4dce-af96-a83c9dce107e',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'76fb6e'},body:JSON.stringify({sessionId:'76fb6e',runId:'initial',hypothesisId:'H5',location:'src/App.tsx:214',message:'API response received',data:{status:response.status,ok:response.ok,code:data?.code ?? null,message:data?.message ?? null},timestamp:Date.now()})}).catch(()=>{});
+      // #endregion
+
+      if (!response.ok) {
+        setFeedback({
+          tone: 'error',
+          message,
+        })
+        setShowTestLink(false)
+        return
+      }
+
+      setFeedback({
+        tone: data?.code === 'already_member' ? 'info' : 'success',
+        message,
+      })
+      setShowTestLink(true)
+      setEmail('')
+    } catch {
+      setFeedback({
+        tone: 'error',
+        message: 'We could not reach the signup service. Please try again later.',
+      })
+      setShowTestLink(false)
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
-  const handleConfirmJoin = () => {
-    setJoinState('confirmed')
+  const handleCopyPlayLink = async () => {
+    if (!isPlayLinkConfigured) {
+      setFeedback({
+        tone: 'error',
+        message: 'Add VITE_PLAY_TEST_URL before publishing this tester flow.',
+      })
+      return
+    }
+
+    try {
+      await navigator.clipboard.writeText(playTestUrl)
+      setDidCopyPlayLink(true)
+
+      if (copiedTimerRef.current !== null) {
+        window.clearTimeout(copiedTimerRef.current)
+      }
+
+      copiedTimerRef.current = window.setTimeout(() => {
+        setDidCopyPlayLink(false)
+      }, 2500)
+    } catch {
+      setFeedback({
+        tone: 'error',
+        message: 'Could not copy the testing link. You can still open it manually.',
+      })
+    }
   }
 
   const handleOpenPlayLink = () => {
-    if (!isPlayLinkConfigured || joinState !== 'confirmed') {
+    if (!isPlayLinkConfigured || !showTestLink) {
       return
     }
 
@@ -503,130 +571,134 @@ function App() {
                 Internal testing
               </p>
               <h2 className="display-font mt-3 text-3xl text-slate-900 sm:text-5xl">
-                Join the tester group, then unlock the Play test link.
+                Enter your Gmail and get added to the tester group automatically.
               </h2>
               <p className="mt-4 text-base leading-7 text-slate-700">
-                This flow is designed for your Google Group based testing setup.
-                First, join the Shout4Help tester group. Once Google confirms that
-                you have joined, come back and unlock the Play testing link to install
-                the app.
+                Submit the Gmail address you want to test with and Shout4Help will add it
+                directly to the Workspace tester group
+                {' '}
+                <strong>internal-testers@shout4help.com</strong>
+                . As soon as Google accepts the add, the Play internal testing link is
+                unlocked below.
               </p>
 
               <div className="mt-6 grid gap-3 sm:grid-cols-2">
                 <div className="rounded-2xl border border-[#bfdbfe] bg-white/90 px-4 py-3 text-sm text-slate-700">
-                  Step 1: Join the Google Group using the button on the right.
+                  Step 1: Enter a valid Gmail address that you use on your Android device.
                 </div>
                 <div className="rounded-2xl border border-[#bfdbfe] bg-white/90 px-4 py-3 text-sm text-slate-700">
-                  Step 2: After joining successfully, unlock the Play test link.
+                  Step 2: Once the add succeeds, copy or open the Play test link instantly.
                 </div>
               </div>
             </div>
 
-            <div className="glass-card rounded-[1.75rem] p-5 sm:p-6">
+            <form
+              onSubmit={handleSubmit}
+              className="glass-card rounded-[1.75rem] p-5 sm:p-6"
+            >
               <p className="text-sm font-medium text-slate-700">Tester onboarding</p>
-              <div className="mt-4 flex flex-col gap-4">
+
+              <label
+                htmlFor="gmail"
+                className="mt-4 block text-sm font-medium text-slate-700"
+              >
+                Gmail ID
+              </label>
+              <input
+                id="gmail"
+                name="gmail"
+                type="email"
+                inputMode="email"
+                autoComplete="email"
+                placeholder="yourname@gmail.com"
+                value={email}
+                onChange={(event) => {
+                  setEmail(event.target.value)
+                  if (feedback?.tone === 'error') {
+                    setFeedback(null)
+                  }
+                }}
+                className="mt-3 w-full rounded-2xl border border-[#bfdbfe] bg-white px-4 py-4 text-base text-slate-900 outline-none transition focus:border-[#2563eb] focus:ring-2 focus:ring-[#2563eb33]"
+              />
+
+              <div className="mt-4 flex flex-col gap-4 sm:flex-row sm:items-center">
                 <button
-                  type="button"
-                  onClick={handleJoinGroup}
-                  disabled={!isJoinConfigured}
+                  type="submit"
+                  disabled={!isValidGmail || isSubmitting}
                   className={`inline-flex items-center justify-center rounded-full px-5 py-3 text-sm font-semibold text-white transition-transform duration-300 ${
-                    !isJoinConfigured
+                    !isValidGmail || isSubmitting
                       ? 'cursor-not-allowed bg-[#93c5fd]'
                       : 'bg-[#1d4ed8] hover:-translate-y-0.5'
                   }`}
                 >
-                  Join tester group
+                  {isSubmitting ? 'Adding to group...' : 'Join our community'}
                 </button>
-
-                <button
-                  type="button"
-                  onClick={handleConfirmJoin}
-                  disabled={joinState !== 'waiting' || cooldownSecondsLeft > 0}
-                  className={`inline-flex items-center justify-center rounded-full border px-5 py-3 text-sm font-semibold transition-colors duration-300 ${
-                    joinState !== 'waiting' || cooldownSecondsLeft > 0
-                      ? 'cursor-not-allowed border-[#dbeafe] bg-[#eff6ff] text-slate-400'
-                      : 'border-[#1d4ed8] bg-white text-[#1d4ed8] hover:bg-[#eff6ff]'
-                  }`}
-                >
-                  {cooldownSecondsLeft > 0
-                    ? `Enable in ${cooldownSecondsLeft}s`
-                    : 'I joined successfully'}
-                </button>
-
-                <button
-                  type="button"
-                  onClick={handleOpenPlayLink}
-                  disabled={!isPlayLinkConfigured || joinState !== 'confirmed'}
-                  className={`inline-flex items-center justify-center rounded-full px-5 py-3 text-sm font-semibold text-white transition-transform duration-300 ${
-                    !isPlayLinkConfigured || joinState !== 'confirmed'
-                      ? 'cursor-not-allowed bg-slate-300'
-                      : 'bg-[#0f766e] hover:-translate-y-0.5'
-                  }`}
-                >
-                  Get test link
-                </button>
+                <p className="text-sm text-slate-500">
+                  Only Gmail addresses can be added to the tester group.
+                </p>
               </div>
 
               <div aria-live="polite" className="mt-5 min-h-7">
                 <AnimatePresence mode="wait">
-                  {!isJoinConfigured || !isPlayLinkConfigured ? (
+                  {!isPlayLinkConfigured ? (
                     <motion.p
-                      key="missing-links"
+                      key="missing-play-link"
                       initial={{ opacity: 0, y: 8 }}
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: -8 }}
                       className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800"
                     >
-                      Fill these placeholders before publishing:
-                      {' '}
-                      <code>VITE_GOOGLE_GROUP_JOIN_URL</code>
-                      {' '}
-                      and
+                      Fill
                       {' '}
                       <code>VITE_PLAY_TEST_URL</code>
-                      .
-                    </motion.p>
-                  ) : joinState === 'idle' ? (
-                    <motion.p
-                      key="idle"
-                      initial={{ opacity: 0, y: 8 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -8 }}
-                      className="rounded-2xl border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-700"
-                    >
-                      Start by opening the Google Group join page. After you have been
-                      added successfully, come back here to unlock the Play testing link.
-                    </motion.p>
-                  ) : joinState === 'waiting' ? (
-                    <motion.p
-                      key="waiting"
-                      initial={{ opacity: 0, y: 8 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -8 }}
-                      className="rounded-2xl border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-700"
-                    >
-                      The Google Group page opened in a new tab. Once Google shows you
-                      joined successfully, return here and click
                       {' '}
-                      <strong>I joined successfully</strong>
-                      . If Play access does not work immediately, wait a few minutes and
-                      try again.
+                      before publishing this tester flow.
                     </motion.p>
-                  ) : (
+                  ) : feedback ? (
                     <motion.p
-                      key="confirmed"
+                      key={`${feedback.tone}-${feedback.message}`}
                       initial={{ opacity: 0, y: 8 }}
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: -8 }}
-                      className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700"
+                      className={`rounded-2xl px-4 py-3 text-sm ${
+                        feedback.tone === 'error'
+                          ? 'border border-rose-300 bg-rose-50 text-rose-700'
+                          : feedback.tone === 'info'
+                            ? 'border border-blue-200 bg-blue-50 text-blue-700'
+                            : 'border border-emerald-200 bg-emerald-50 text-emerald-700'
+                      }`}
                     >
-                      Group join confirmed. You can now open the Play test link and opt
-                      into the Shout4Help testing track.
+                      {feedback.message}
                     </motion.p>
-                  )}
+                  ) : null}
                 </AnimatePresence>
               </div>
-            </div>
+
+              {showTestLink ? (
+                <div className="mt-5 rounded-[1.5rem] border border-[#bfdbfe] bg-[#eff6ff] p-4">
+                  <p className="text-sm font-medium text-slate-700">Play internal test link</p>
+                  <div className="mt-3 rounded-2xl border border-[#bfdbfe] bg-white p-3 text-sm text-slate-700 break-all">
+                    {playTestUrl}
+                  </div>
+                  <div className="mt-4 flex flex-col gap-3 sm:flex-row">
+                    <button
+                      type="button"
+                      onClick={handleCopyPlayLink}
+                      className="inline-flex items-center justify-center rounded-full border border-[#1d4ed8] bg-white px-5 py-3 text-sm font-semibold text-[#1d4ed8] transition-colors duration-300 hover:bg-[#eff6ff]"
+                    >
+                      {didCopyPlayLink ? 'Copied' : 'Copy test link'}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleOpenPlayLink}
+                      className="inline-flex items-center justify-center rounded-full bg-[#0f766e] px-5 py-3 text-sm font-semibold text-white transition-transform duration-300 hover:-translate-y-0.5"
+                    >
+                      Open test link
+                    </button>
+                  </div>
+                </div>
+              ) : null}
+            </form>
           </div>
         </motion.section>
       </div>
