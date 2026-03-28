@@ -181,10 +181,6 @@ function App() {
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
 
-    // #region agent log
-    fetch('http://127.0.0.1:7316/ingest/70f095ac-22c5-4dce-af96-a83c9dce107e',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'76fb6e'},body:JSON.stringify({sessionId:'76fb6e',runId:'initial',hypothesisId:'H5',location:'src/App.tsx:184',message:'Submit started',data:{isValidGmail,hasApiBaseUrl:Boolean(apiBaseUrl),hasPlayTestUrl:isPlayLinkConfigured,emailDomain:normalizedEmail.split('@')[1] ?? null},timestamp:Date.now()})}).catch(()=>{});
-    // #endregion
-
     if (!isValidGmail) {
       setFeedback({
         tone: 'error',
@@ -212,10 +208,6 @@ function App() {
         typeof data?.message === 'string'
           ? data.message
           : 'We could not add your Gmail right now. Please try again later.'
-
-      // #region agent log
-      fetch('http://127.0.0.1:7316/ingest/70f095ac-22c5-4dce-af96-a83c9dce107e',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'76fb6e'},body:JSON.stringify({sessionId:'76fb6e',runId:'initial',hypothesisId:'H5',location:'src/App.tsx:214',message:'API response received',data:{status:response.status,ok:response.ok,code:data?.code ?? null,message:data?.message ?? null},timestamp:Date.now()})}).catch(()=>{});
-      // #endregion
 
       if (!response.ok) {
         setFeedback({
