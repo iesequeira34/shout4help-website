@@ -1,5 +1,4 @@
 import { AnimatePresence, motion } from 'framer-motion'
-import type { FormEvent } from 'react'
 import { useEffect, useRef, useState } from 'react'
 import { Check, ChevronDown, Copy, ExternalLink, Mail, Menu, Phone, X } from 'lucide-react'
 
@@ -15,8 +14,6 @@ const campusImage =
   'https://images.unsplash.com/photo-1763925200688-812de3f83e97?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxjb2xsZWdlJTIwY2FtcHVzJTIwc3R1ZGVudHMlMjB3YWxraW5nJTIwbmlnaHR8ZW58MXx8fHwxNzc0Njg0OTkxfDA&ixlib=rb-4.1.0&q=80&w=1080'
 const hikerImage =
   'https://images.unsplash.com/photo-1765036715827-97f5f51c89a8?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxoaWtlciUyMHRyYWlsJTIwc29sbyUyMG1vdW50YWluJTIwc2FmZXR5fGVufDF8fHx8MTc3NDY4OTk3Mnww&ixlib=rb-4.1.0&q=80&w=1080'
-
-const gmailPattern = /^[a-z0-9._%+-]+@gmail\.com$/i
 
 const featureCards = [
   {
@@ -201,26 +198,17 @@ const cases = [
   },
 ]
 
-type FeedbackTone = 'success' | 'info' | 'error'
-
-type FeedbackState = {
-  tone: FeedbackTone
-  message: string
-}
-
 type TesterCtaProps = {
-  email: string
-  feedback: FeedbackState | null
-  isSubmitting: boolean
-  showTestLink: boolean
-  didCopyPlayLink: boolean
-  isPlayLinkConfigured: boolean
-  playTestUrl: string
-  isValidGmail: boolean
-  onEmailChange: (value: string) => void
-  onSubmit: (event: FormEvent<HTMLFormElement>) => Promise<void>
-  onCopyLink: () => Promise<void>
-  onOpenLink: () => void
+  hasConfirmedGroupJoin: boolean
+  didCopyAndroidLink: boolean
+  isGoogleGroupConfigured: boolean
+  isAndroidAppConfigured: boolean
+  googleGroupUrl: string
+  androidAppUrl: string
+  onOpenJoinGroup: () => void
+  onConfirmGroupJoin: () => void
+  onCopyAndroidLink: () => Promise<void>
+  onOpenAndroidLink: () => void
 }
 
 function BrandMark() {
@@ -554,6 +542,7 @@ function Features() {
 
 function HowItWorks() {
   const [activeStep, setActiveStep] = useState<number | null>(null)
+  const [expandedSteps, setExpandedSteps] = useState<Record<number, boolean>>({})
 
   return (
     <section id="how-it-works" className="py-24 bg-white">
@@ -631,14 +620,28 @@ function HowItWorks() {
                   <p
                     className="text-gray-500 text-sm leading-relaxed"
                     style={{
-                      display: '-webkit-box',
-                      WebkitLineClamp: 2,
+                      display: expandedSteps[index] ? 'block' : '-webkit-box',
+                      WebkitLineClamp: expandedSteps[index] ? 'unset' : 2,
                       WebkitBoxOrient: 'vertical' as const,
-                      overflow: 'hidden',
+                      overflow: expandedSteps[index] ? 'visible' : 'hidden',
                     }}
                   >
                     {step.description}
                   </p>
+                  {step.description.length > 90 ? (
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setExpandedSteps((currentExpandedSteps) => ({
+                          ...currentExpandedSteps,
+                          [index]: !currentExpandedSteps[index],
+                        }))
+                      }
+                      className="mt-2 text-xs font-semibold text-[#2563EB] hover:text-[#1D4ED8]"
+                    >
+                      {expandedSteps[index] ? 'Show less' : 'Read more'}
+                    </button>
+                  ) : null}
                 </div>
               </div>
             ))}
@@ -674,21 +677,21 @@ function UseCases() {
           </p>
         </div>
 
-        <div className="flex flex-wrap justify-center gap-3 mb-10">
+        <div className="grid grid-cols-4 gap-1.5 sm:flex sm:flex-wrap sm:justify-center sm:gap-3 mb-10">
           {cases.map((useCase, index) => (
             <button
               key={useCase.id}
               type="button"
               onClick={() => setActive(index)}
-              className="flex items-center gap-2 px-5 py-2.5 rounded-2xl text-sm font-semibold border-2 transition-all duration-200"
+              className="min-w-0 px-1.5 py-1.5 sm:px-5 sm:py-2.5 rounded-xl sm:rounded-2xl text-[10px] leading-[1.15] tracking-[-0.01em] sm:text-sm font-medium sm:font-semibold border-2 transition-all duration-200 text-center"
               style={{
+                fontFamily: "'Plus Jakarta Sans', sans-serif",
                 backgroundColor: active === index ? current.color : 'white',
                 borderColor: active === index ? current.color : '#E2E8F0',
                 color: active === index ? 'white' : '#4B5563',
                 boxShadow: active === index ? `0 4px 20px ${cases[index].color}40` : 'none',
               }}
             >
-              <span>{useCase.emoji}</span>
               {useCase.label}
             </button>
           ))}
@@ -774,19 +777,25 @@ function UseCases() {
 }
 
 function TesterCta({
-  email,
-  feedback,
-  isSubmitting,
-  showTestLink,
-  didCopyPlayLink,
-  isPlayLinkConfigured,
-  playTestUrl,
-  isValidGmail,
-  onEmailChange,
-  onSubmit,
-  onCopyLink,
-  onOpenLink,
+  hasConfirmedGroupJoin,
+  didCopyAndroidLink,
+  isGoogleGroupConfigured,
+  isAndroidAppConfigured,
+  googleGroupUrl,
+  androidAppUrl,
+  onOpenJoinGroup,
+  onConfirmGroupJoin,
+  onCopyAndroidLink,
+  onOpenAndroidLink,
 }: TesterCtaProps) {
+  const envWarnings: string[] = []
+  if (!isGoogleGroupConfigured) {
+    envWarnings.push('VITE_GOOGLE_GROUP_URL')
+  }
+  if (!isAndroidAppConfigured) {
+    envWarnings.push('VITE_ANDROID_APP_URL (or legacy VITE_PLAY_TEST_URL)')
+  }
+
   return (
     <section
       id="download"
@@ -799,14 +808,14 @@ function TesterCta({
       <div className="relative z-10 max-w-5xl mx-auto px-6 text-center">
         <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/10 border border-white/20 mb-6">
           <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
-          <span className="text-white/90 text-sm font-medium">Internal testing access</span>
+          <span className="text-white/90 text-sm font-medium">Closed testing access</span>
         </div>
 
         <h2
           className="text-white mb-4"
           style={{ fontSize: 'clamp(2rem, 5vw, 3.5rem)', fontWeight: 800, lineHeight: 1.15 }}
         >
-          Join the tester group,
+          Join the Google tester group,
           <span
             style={{
               background: 'linear-gradient(90deg, #93C5FD, #BFDBFE)',
@@ -815,110 +824,141 @@ function TesterCta({
             }}
           >
             {' '}
-            then open the Play link.
+            then open the app on Play.
           </span>
         </h2>
         <p
           className="text-blue-100 mb-12 max-w-xl mx-auto"
           style={{ fontSize: '1.125rem', lineHeight: 1.7 }}
         >
-          Keep the same Gmail tester flow at the end of the page: submit a Gmail address,
-          get it added to the Workspace tester group, and then copy or open the Play testing
-          link after success.
+          Sign in to Google Groups with the same Gmail account you use on Google Play, then join{' '}
+          <span className="text-white font-medium">Shout4Help Internal Testers</span>. Once you
+          confirm you joined with that same Gmail, we show the Play Store link.
         </p>
 
-        <form
-          onSubmit={onSubmit}
-          className="mx-auto max-w-3xl rounded-3xl bg-white p-6 sm:p-8 text-left shadow-2xl"
-        >
-          <label htmlFor="gmail" className="block text-sm font-semibold text-gray-700 mb-3">
-            Gmail ID
-          </label>
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-stretch">
-            <input
-              id="gmail"
-              name="gmail"
-              type="email"
-              inputMode="email"
-              autoComplete="email"
-              placeholder="yourname@gmail.com"
-              value={email}
-              onChange={(event) => onEmailChange(event.target.value)}
-              className="min-w-0 flex-1 rounded-2xl border border-gray-200 bg-gray-50 px-4 py-4 text-gray-900 outline-none focus:border-[#2563EB] focus:bg-white"
-            />
+        <div className="mx-auto max-w-3xl rounded-3xl bg-white p-6 sm:p-8 text-left shadow-2xl">
+          <AnimatePresence>
+            {envWarnings.length > 0 ? (
+              <motion.p
+                key="missing-env"
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -8 }}
+                className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800"
+              >
+                Set {envWarnings.join(' and ')} before publishing this tester flow.
+              </motion.p>
+            ) : null}
+          </AnimatePresence>
 
-            <button
-              type="submit"
-              disabled={!isValidGmail || isSubmitting}
-              className={`rounded-2xl px-8 py-4 font-bold text-base transition-all duration-200 sm:min-w-60 ${
-                !isValidGmail || isSubmitting
-                  ? 'bg-blue-200 text-white cursor-not-allowed'
-                  : 'bg-[#2563EB] text-white shadow-xl hover:-translate-y-1 hover:bg-[#1D4ED8]'
-              }`}
-            >
-              {isSubmitting ? 'Adding to group...' : 'Join our community'}
-            </button>
-          </div>
-
-          <div aria-live="polite" className="mt-5 min-h-7">
-            <AnimatePresence mode="wait">
-              {!isPlayLinkConfigured ? (
-                <motion.p
-                  key="missing-play-link"
-                  initial={{ opacity: 0, y: 8 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -8 }}
-                  className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800"
-                >
-                  Fill <code>VITE_PLAY_TEST_URL</code> before publishing this tester flow.
-                </motion.p>
-              ) : feedback ? (
-                <motion.p
-                  key={`${feedback.tone}-${feedback.message}`}
-                  initial={{ opacity: 0, y: 8 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -8 }}
-                  className={`rounded-2xl px-4 py-3 text-sm ${
-                    feedback.tone === 'error'
-                      ? 'border border-rose-300 bg-rose-50 text-rose-700'
-                      : feedback.tone === 'info'
-                        ? 'border border-blue-200 bg-blue-50 text-blue-700'
-                        : 'border border-emerald-200 bg-emerald-50 text-emerald-700'
-                  }`}
-                >
-                  {feedback.message}
-                </motion.p>
-              ) : null}
-            </AnimatePresence>
-          </div>
-
-          {showTestLink ? (
-            <div className="mt-5 rounded-3xl border border-blue-100 bg-blue-50 p-4">
-              <p className="text-sm font-semibold text-gray-700">Play internal test link</p>
-              <div className="mt-3 rounded-2xl border border-blue-100 bg-white p-3 text-sm text-slate-700 break-all">
-                {playTestUrl}
-              </div>
-              <div className="mt-4 flex flex-wrap gap-3">
-                <button
-                  type="button"
-                  onClick={onCopyLink}
-                  className="flex items-center gap-3 px-6 py-4 rounded-2xl border border-blue-200 bg-white text-[#2563EB] font-semibold hover:bg-blue-50 transition-all hover:-translate-y-1 hover:shadow-xl min-w-52 justify-center"
-                >
-                  {didCopyPlayLink ? <Check size={18} /> : <Copy size={18} />}
-                  <span>{didCopyPlayLink ? 'Copied' : 'Copy test link'}</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={onOpenLink}
-                  className="flex items-center gap-3 px-6 py-4 rounded-2xl bg-gradient-to-r from-[#2563EB] to-[#1D4ED8] text-white font-semibold hover:from-[#1D4ED8] hover:to-[#1E40AF] transition-all hover:-translate-y-1 hover:shadow-2xl min-w-52 justify-center"
-                >
-                  <ExternalLink size={18} />
-                  <span>Open test link</span>
-                </button>
+          <div className="space-y-6">
+            <div>
+              <p className="text-sm font-semibold text-gray-900 mb-2">Before you continue</p>
+              <div className="rounded-2xl border border-blue-100 bg-blue-50 px-4 py-4 text-sm text-blue-900 space-y-2">
+                <p>
+                  Sign in to Google Groups with your <strong>Google Play Gmail ID</strong>.
+                </p>
+                <p>
+                  Join <strong>Shout4Help Internal Testers</strong> using that same Gmail ID.
+                </p>
+                <p>
+                  If you join with a different account, the Play Store link may not grant access.
+                </p>
               </div>
             </div>
+
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wide text-gray-500 mb-2">
+                Step 1
+              </p>
+              <p className="text-sm text-gray-600 mb-3">
+                Open the Google Group and join or request access with your Google Play Gmail ID.
+              </p>
+              {!isGoogleGroupConfigured ? (
+                <p className="text-sm text-amber-800 bg-amber-50 border border-amber-200 rounded-2xl px-4 py-3">
+                  Add <code className="text-xs">VITE_GOOGLE_GROUP_URL</code> to enable the join
+                  button.
+                </p>
+              ) : (
+                <div className="space-y-3">
+                  <button
+                    type="button"
+                    onClick={onOpenJoinGroup}
+                    className="flex items-center gap-3 px-6 py-4 rounded-2xl bg-gradient-to-r from-[#2563EB] to-[#1D4ED8] text-white font-semibold hover:from-[#1D4ED8] hover:to-[#1E40AF] transition-all hover:-translate-y-1 hover:shadow-xl w-full sm:w-auto justify-center"
+                  >
+                    <ExternalLink size={18} />
+                    <span>Open Google Group</span>
+                  </button>
+                  <p className="text-xs text-gray-500 break-all">{googleGroupUrl}</p>
+                </div>
+              )}
+            </div>
+
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wide text-gray-500 mb-2">
+                Step 2
+              </p>
+              <p className="text-sm text-gray-600 mb-3">
+                Once you have joined the group with the same Gmail account, confirm below to reveal
+                the Android app link.
+              </p>
+              <button
+                type="button"
+                onClick={onConfirmGroupJoin}
+                disabled={hasConfirmedGroupJoin}
+                className={`rounded-2xl px-6 py-4 font-semibold text-base transition-all w-full sm:w-auto ${
+                  hasConfirmedGroupJoin
+                    ? 'bg-emerald-100 text-emerald-800 border border-emerald-200 cursor-default'
+                    : 'border-2 border-[#2563EB] text-[#2563EB] hover:bg-blue-50'
+                }`}
+              >
+                {hasConfirmedGroupJoin ? (
+                  <span className="inline-flex items-center gap-2">
+                    <Check size={18} /> Join confirmed
+                  </span>
+                ) : (
+                  'I joined the group with my Google Play Gmail ID'
+                )}
+              </button>
+            </div>
+          </div>
+
+          {hasConfirmedGroupJoin ? (
+            <div className="mt-6 rounded-3xl border border-blue-100 bg-blue-50 p-4">
+              <p className="text-sm font-semibold text-gray-700">Google Play (Android)</p>
+              {!isAndroidAppConfigured ? (
+                <p className="mt-3 text-sm text-amber-800">
+                  Add <code className="text-xs">VITE_ANDROID_APP_URL</code> (or{' '}
+                  <code className="text-xs">VITE_PLAY_TEST_URL</code>) to show the store link.
+                </p>
+              ) : (
+                <>
+                  <div className="mt-3 rounded-2xl border border-blue-100 bg-white p-3 text-sm text-slate-700 break-all">
+                    {androidAppUrl}
+                  </div>
+                  <div className="mt-4 flex flex-wrap gap-3">
+                    <button
+                      type="button"
+                      onClick={onCopyAndroidLink}
+                      className="flex items-center gap-3 px-6 py-4 rounded-2xl border border-blue-200 bg-white text-[#2563EB] font-semibold hover:bg-blue-50 transition-all hover:-translate-y-1 hover:shadow-xl min-w-52 justify-center"
+                    >
+                      {didCopyAndroidLink ? <Check size={18} /> : <Copy size={18} />}
+                      <span>{didCopyAndroidLink ? 'Copied' : 'Copy Play link'}</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={onOpenAndroidLink}
+                      className="flex items-center gap-3 px-6 py-4 rounded-2xl bg-gradient-to-r from-[#2563EB] to-[#1D4ED8] text-white font-semibold hover:from-[#1D4ED8] hover:to-[#1E40AF] transition-all hover:-translate-y-1 hover:shadow-2xl min-w-52 justify-center"
+                    >
+                      <ExternalLink size={18} />
+                      <span>Open in Play Store</span>
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
           ) : null}
-        </form>
+        </div>
 
       </div>
     </section>
@@ -1004,17 +1044,17 @@ function Footer() {
 }
 
 export default function ReferenceLanding() {
-  const [email, setEmail] = useState('')
-  const [feedback, setFeedback] = useState<FeedbackState | null>(null)
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [showTestLink, setShowTestLink] = useState(false)
-  const [didCopyPlayLink, setDidCopyPlayLink] = useState(false)
+  const [hasConfirmedGroupJoin, setHasConfirmedGroupJoin] = useState(false)
+  const [didCopyAndroidLink, setDidCopyAndroidLink] = useState(false)
   const copiedTimerRef = useRef<number | null>(null)
-  const playTestUrl = (import.meta.env.VITE_PLAY_TEST_URL ?? '').trim()
-  const apiBaseUrl = (import.meta.env.VITE_API_BASE_URL ?? '').replace(/\/$/, '')
-  const isPlayLinkConfigured = Boolean(playTestUrl)
-  const normalizedEmail = email.trim()
-  const isValidGmail = gmailPattern.test(normalizedEmail)
+  const googleGroupUrl = (import.meta.env.VITE_GOOGLE_GROUP_URL ?? '').trim()
+  const androidAppUrl = (
+    import.meta.env.VITE_ANDROID_APP_URL ??
+    import.meta.env.VITE_PLAY_TEST_URL ??
+    ''
+  ).trim()
+  const isGoogleGroupConfigured = Boolean(googleGroupUrl)
+  const isAndroidAppConfigured = Boolean(androidAppUrl)
 
   useEffect(() => {
     return () => {
@@ -1024,97 +1064,44 @@ export default function ReferenceLanding() {
     }
   }, [])
 
-  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault()
-
-    if (!isValidGmail) {
-      setFeedback({
-        tone: 'error',
-        message: 'Please enter a valid Gmail address ending in @gmail.com.',
-      })
-      setShowTestLink(false)
+  const handleOpenJoinGroup = () => {
+    if (!isGoogleGroupConfigured) {
       return
     }
-
-    setIsSubmitting(true)
-    setFeedback(null)
-    setDidCopyPlayLink(false)
-
-    try {
-      const response = await fetch(`${apiBaseUrl}/api/testers`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email: normalizedEmail }),
-      })
-
-      const data = await response.json().catch(() => null)
-      const message =
-        typeof data?.message === 'string'
-          ? data.message
-          : 'We could not add your Gmail right now. Please try again later.'
-
-      if (!response.ok) {
-        setFeedback({
-          tone: 'error',
-          message,
-        })
-        setShowTestLink(false)
-        return
-      }
-
-      setFeedback({
-        tone: data?.code === 'already_member' ? 'info' : 'success',
-        message,
-      })
-      setShowTestLink(true)
-      setEmail('')
-    } catch {
-      setFeedback({
-        tone: 'error',
-        message: 'We could not reach the signup service. Please try again later.',
-      })
-      setShowTestLink(false)
-    } finally {
-      setIsSubmitting(false)
-    }
+    window.open(googleGroupUrl, '_blank', 'noopener,noreferrer')
   }
 
-  const handleCopyPlayLink = async () => {
-    if (!isPlayLinkConfigured) {
-      setFeedback({
-        tone: 'error',
-        message: 'Add VITE_PLAY_TEST_URL before publishing this tester flow.',
-      })
+  const handleConfirmGroupJoin = () => {
+    setHasConfirmedGroupJoin(true)
+  }
+
+  const handleCopyAndroidLink = async () => {
+    if (!isAndroidAppConfigured) {
       return
     }
 
     try {
-      await navigator.clipboard.writeText(playTestUrl)
-      setDidCopyPlayLink(true)
+      await navigator.clipboard.writeText(androidAppUrl)
+      setDidCopyAndroidLink(true)
 
       if (copiedTimerRef.current !== null) {
         window.clearTimeout(copiedTimerRef.current)
       }
 
       copiedTimerRef.current = window.setTimeout(() => {
-        setDidCopyPlayLink(false)
+        setDidCopyAndroidLink(false)
       }, 2500)
     } catch {
-      setFeedback({
-        tone: 'error',
-        message: 'Could not copy the testing link. You can still open it manually.',
-      })
+      // No inline feedback state in this flow. Failing to copy still leaves the open button visible.
     }
   }
 
-  const handleOpenPlayLink = () => {
-    if (!isPlayLinkConfigured || !showTestLink) {
+  const handleOpenAndroidLink = () => {
+    if (!isAndroidAppConfigured || !hasConfirmedGroupJoin) {
       return
     }
 
-    window.open(playTestUrl, '_blank', 'noopener,noreferrer')
+    window.open(androidAppUrl, '_blank', 'noopener,noreferrer')
   }
 
   return (
@@ -1125,23 +1112,16 @@ export default function ReferenceLanding() {
       <HowItWorks />
       <UseCases />
       <TesterCta
-        email={email}
-        feedback={feedback}
-        isSubmitting={isSubmitting}
-        showTestLink={showTestLink}
-        didCopyPlayLink={didCopyPlayLink}
-        isPlayLinkConfigured={isPlayLinkConfigured}
-        playTestUrl={playTestUrl}
-        isValidGmail={isValidGmail}
-        onEmailChange={(value) => {
-          setEmail(value)
-          if (feedback?.tone === 'error') {
-            setFeedback(null)
-          }
-        }}
-        onSubmit={handleSubmit}
-        onCopyLink={handleCopyPlayLink}
-        onOpenLink={handleOpenPlayLink}
+        hasConfirmedGroupJoin={hasConfirmedGroupJoin}
+        didCopyAndroidLink={didCopyAndroidLink}
+        isGoogleGroupConfigured={isGoogleGroupConfigured}
+        isAndroidAppConfigured={isAndroidAppConfigured}
+        googleGroupUrl={googleGroupUrl}
+        androidAppUrl={androidAppUrl}
+        onOpenJoinGroup={handleOpenJoinGroup}
+        onConfirmGroupJoin={handleConfirmGroupJoin}
+        onCopyAndroidLink={handleCopyAndroidLink}
+        onOpenAndroidLink={handleOpenAndroidLink}
       />
       <Footer />
     </div>

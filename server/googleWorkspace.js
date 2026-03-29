@@ -82,7 +82,8 @@ export async function addGroupMember(email) {
 
     return {
       code: 'added',
-      message: 'Success. Your Gmail was added to the Shout4Help tester group.',
+      message:
+        'Thanks — we saved your Gmail for our records. Next, join Shout4Help Internal Testers on Google Groups (same account), then confirm on the page to open the Play Store link.',
     }
   } catch (error) {
     const status = getGoogleErrorStatus(error)
@@ -90,7 +91,8 @@ export async function addGroupMember(email) {
     if (status === 409) {
       return {
         code: 'already_member',
-        message: 'This Gmail is already in the Shout4Help tester group.',
+        message:
+          'We already have this Gmail on file. Continue by joining Shout4Help Internal Testers on Google Groups, then confirm below to open the Play Store link.',
       }
     }
 
