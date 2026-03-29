@@ -3,7 +3,11 @@ import { useEffect, useRef, useState } from 'react'
 import { Check, ChevronDown, Copy, ExternalLink, Mail, Menu, Phone, X } from 'lucide-react'
 
 import mainScreen from './assets/main_screen.jpg'
+import campusSafetyIcon from './assets/campus_safety.png'
 import logo from './assets/logo.svg'
+import outdoorAdventureIcon from './assets/outdoor_adventures.png'
+import personalSafetyIcon from './assets/personal_safety.png'
+import seniorCareIcon from './assets/senior_care.png'
 
 const heroImage = mainScreen
 const nightSafetyImage =
@@ -122,6 +126,7 @@ const cases = [
     subtitle: 'For individuals in urban or unfamiliar environments',
     description:
       "Whether it's a late commute home or a solo night out, Shout4Help acts as your silent guardian. If something goes wrong, one shout is all it takes — no fumbling for your phone in the dark.",
+    selectorImage: personalSafetyIcon,
     image: nightSafetyImage,
     stats: [
       { value: '1 in 3', label: 'women feel unsafe walking alone' },
@@ -143,6 +148,7 @@ const cases = [
     subtitle: 'For aging adults living independently',
     description:
       'Falls, medical events, and emergencies do not wait. Shout4Help gives seniors a hands-free way to call for help without navigating complex interfaces — family members are alerted instantly with location.',
+    selectorImage: seniorCareIcon,
     image: elderlyImage,
     stats: [
       { value: '36M', label: 'falls reported annually in the US' },
@@ -164,6 +170,7 @@ const cases = [
     subtitle: 'For students in large or unfamiliar campuses',
     description:
       'Students navigating large campuses after dark face real risks. Shout4Help integrates with existing campus emergency networks and provides instant personal alerts even without cellular data.',
+    selectorImage: campusSafetyIcon,
     image: campusImage,
     stats: [
       { value: '55%', label: 'students feel unsafe on campus at night' },
@@ -185,6 +192,7 @@ const cases = [
     subtitle: 'For adventurers in remote areas with poor signal',
     description:
       'Deep in a trail with no signal? Shout4Help queues your SOS alert and fires it the moment satellite or cellular connectivity appears. GPS coordinates are cached locally even in airplane mode.',
+    selectorImage: outdoorAdventureIcon,
     image: hikerImage,
     stats: [
       { value: '250K+', label: 'search & rescue incidents yearly' },
@@ -677,22 +685,41 @@ function UseCases() {
           </p>
         </div>
 
-        <div className="grid grid-cols-4 gap-1.5 sm:flex sm:flex-wrap sm:justify-center sm:gap-3 mb-10">
+        <div className="grid grid-cols-4 gap-2 sm:gap-3 mb-10 max-w-sm sm:max-w-xl mx-auto">
           {cases.map((useCase, index) => (
             <button
               key={useCase.id}
               type="button"
               onClick={() => setActive(index)}
-              className="min-w-0 px-1.5 py-1.5 sm:px-5 sm:py-2.5 rounded-xl sm:rounded-2xl text-[10px] leading-[1.15] tracking-[-0.01em] sm:text-sm font-medium sm:font-semibold border-2 transition-all duration-200 text-center"
+              aria-label={useCase.label}
+              className="group relative min-w-0 w-full max-w-[4.5rem] sm:max-w-[5.75rem] mx-auto aspect-square overflow-hidden rounded-xl sm:rounded-2xl border-2 transition-all duration-200"
               style={{
-                fontFamily: "'Plus Jakarta Sans', sans-serif",
-                backgroundColor: active === index ? current.color : 'white',
+                backgroundColor: '#FFFFFF',
                 borderColor: active === index ? current.color : '#E2E8F0',
-                color: active === index ? 'white' : '#4B5563',
                 boxShadow: active === index ? `0 4px 20px ${cases[index].color}40` : 'none',
               }}
             >
-              {useCase.label}
+              <img
+                src={useCase.selectorImage}
+                alt={useCase.label}
+                className="absolute inset-0 h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+              />
+              <div
+                className="absolute inset-0 transition-opacity duration-200"
+                style={{
+                  background: `linear-gradient(180deg, ${useCase.color}1F 0%, ${useCase.color}80 100%)`,
+                  opacity: active === index ? 0.92 : 0.75,
+                }}
+              />
+              <div className="absolute inset-x-0 bottom-0 p-2 sm:p-3">
+                <div
+                  className="rounded-lg px-1.5 py-1 text-[8px] sm:text-[10px] font-semibold leading-tight text-white text-center backdrop-blur-sm"
+                  style={{ backgroundColor: active === index ? `${useCase.color}D9` : 'rgba(15,23,42,0.45)' }}
+                >
+                  {useCase.label}
+                </div>
+              </div>
+              <span className="sr-only">{useCase.label}</span>
             </button>
           ))}
         </div>
