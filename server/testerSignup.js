@@ -17,9 +17,15 @@ export async function processTesterSignup(rawEmail) {
 
   try {
     const result = await addGroupMember(email)
+    const statusCode =
+      result.code === 'verification_failed'
+        ? 502
+        : result.code === 'added'
+          ? 201
+          : 200
 
     return {
-      statusCode: result.code === 'added' ? 201 : 200,
+      statusCode,
       body: result,
     }
   } catch (error) {

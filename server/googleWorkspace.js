@@ -56,6 +56,23 @@ function getGoogleErrorStatus(error) {
   return error?.code ?? error?.response?.status ?? error?.status ?? null
 }
 
+async function verifyGroupMember(directory, groupEmail, email) {
+  try {
+    const response = await directory.members.get({
+      groupKey: groupEmail,
+      memberKey: email,
+    })
+
+    return typeof response?.data?.email === 'string'
+  } catch (error) {
+    if (getGoogleErrorStatus(error) === 404) {
+      return false
+    }
+
+    throw error
+  }
+}
+
 export async function addGroupMember(email) {
   const config = getWorkspaceConfig()
 
@@ -80,19 +97,39 @@ export async function addGroupMember(email) {
       },
     })
 
+    const isVerified = await verifyGroupMember(directory, config.groupEmail, email)
+
+    if (!isVerified) {
+      return {
+        code: 'verification_failed',
+        message:
+          'We received your request, but could not verify membership in the group yet. Please try again in a moment.',
+      }
+    }
+
     return {
       code: 'added',
       message:
-        'Thanks — we saved your Gmail for our records. Next, join Shout4Help Internal Testers on Google Groups (same account), then confirm on the page to open the Play Store link.',
+        'Success. You were added to Shout4Help Testers group.',
     }
   } catch (error) {
     const status = getGoogleErrorStatus(error)
 
     if (status === 409) {
+      const isVerified = await verifyGroupMember(directory, config.groupEmail, email)
+
+      if (!isVerified) {
+        return {
+          code: 'verification_failed',
+          message:
+            'You may already exist on the tester list, but we could not verify membership in the group yet. Please try again in a moment.',
+        }
+      }
+
       return {
         code: 'already_member',
         message:
-          'We already have this Gmail on file. Continue by joining Shout4Help Internal Testers on Google Groups, then confirm below to open the Play Store link.',
+          'You are already a verified member of our group.',
       }
     }
 
