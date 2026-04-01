@@ -70,7 +70,7 @@ const featureCards = [
     accent: '#0D9488',
     title: 'Trusted Contact Escalation',
     description:
-      'Add up to 5 trusted contacts who receive layered alerts: SMS with location first, then a 5-second missed-call prompt. The app auto-answers only if a trusted contact calls back.',
+      'Add up to 3 trusted contacts who receive layered alerts: SMS with location first, then a 5-second missed-call prompt. The app auto-answers only if a trusted contact calls back.',
     tag: 'Multi-Contact',
   },
 ]
@@ -170,7 +170,7 @@ const cases = [
     image: campusImage,
     stats: [
       { value: '55%', label: 'students feel unsafe on campus at night' },
-      { value: '5 contacts', label: 'can be alerted simultaneously' },
+      { value: '3 contacts', label: 'can be alerted sequentially' },
     ],
     bullets: [
       'Works across campus Wi-Fi offline',
@@ -842,10 +842,8 @@ function TesterCta({
           className="text-blue-100 mb-12 max-w-xl mx-auto"
           style={{ fontSize: '1.125rem', lineHeight: 1.7 }}
         >
-          Submit the Gmail you use on Android and we add it directly to{' '}
-          <span className="text-white font-medium">internal-testers@shout4help.com</span>. After
-          the API verifies that membership was added successfully, the Android link is revealed
-          below.
+          Submit the Gmail you used to sign up on Google Play Store and we will add you to our group.
+          After that, we will generate the Play Store link for you to download the app.
         </p>
 
         <form
