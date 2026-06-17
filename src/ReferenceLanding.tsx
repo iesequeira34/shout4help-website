@@ -11,8 +11,6 @@ const nightSafetyImage =
   'https://images.unsplash.com/photo-1628541490178-08555c4b3a11?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxuaWdodCUyMGNpdHklMjBydW5uaW5nJTIwYWxvbmUlMjBzYWZldHl8ZW58MXx8fHwxNzc0Njg5OTY1fDA&ixlib=rb-4.1.0&q=80&w=1080'
 const elderlyImage =
   'https://images.unsplash.com/photo-1544187702-067d81860901?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxlbGRlcmx5JTIwcGVyc29uJTIwbWVkaWNhbCUyMGFsZXJ0JTIwY2FyZXxlbnwxfHx8fDE3NzQ2ODk5Njl8MA&ixlib=rb-4.1.0&q=80&w=1080'
-const campusImage =
-  'https://images.unsplash.com/photo-1763925200688-812de3f83e97?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxjb2xsZWdlJTIwY2FtcHVzJTIwc3R1ZGVudHMlMjB3YWxraW5nJTIwbmlnaHR8ZW58MXx8fHwxNzc0Njg0OTkxfDA&ixlib=rb-4.1.0&q=80&w=1080'
 const hikerImage =
   'https://images.unsplash.com/photo-1765036715827-97f5f51c89a8?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxoaWtlciUyMHRyYWlsJTIwc29sbyUyMG1vdW50YWluJTIwc2FmZXR5fGVufDF8fHx8MTc3NDY4OTk3Mnww&ixlib=rb-4.1.0&q=80&w=1080'
 
