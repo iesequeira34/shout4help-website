@@ -796,7 +796,7 @@ function TesterCta({
           className="text-white mb-4"
           style={{ fontSize: 'clamp(2rem, 5vw, 3.5rem)', fontWeight: 800, lineHeight: 1.15 }}
         >
-          Enter your Gmail ID,
+          One last step,
           <span
             style={{
               background: 'linear-gradient(90deg, #93C5FD, #BFDBFE)',
@@ -805,15 +805,14 @@ function TesterCta({
             }}
           >
             {' '}
-            then open the app on Play Store.
+            and you're in.
           </span>
         </h2>
         <p
           className="text-blue-100 mb-12 max-w-xl mx-auto"
           style={{ fontSize: '1.125rem', lineHeight: 1.7 }}
         >
-          Submit the Gmail you used to sign up on Google Play Store and we will add you to our group.
-          After that, we will generate the Play Store link for you to download the app.
+          Drop your Gmail below — the one you used to sign up on Google Play — and we'll fast-track you straight into the testers group. Then, boom: your download link is ready.
         </p>
 
         <form
