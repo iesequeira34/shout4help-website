@@ -720,10 +720,10 @@ function UseCases() {
               <div className="flex gap-6">
                 {current.stats.map((stat) => (
                   <div key={stat.label}>
-                    <div className="text-white font-bold" style={{ fontSize: '1.5rem' }}>
+                    <div className="text-white font-extrabold" style={{ fontSize: '1.5rem', textShadow: '0 2px 8px rgba(0,0,0,0.3)' }}>
                       {stat.value}
                     </div>
-                    <div className="text-white/70 text-xs">{stat.label}</div>
+                    <div className="text-white/90 text-xs font-semibold">{stat.label}</div>
                   </div>
                 ))}
               </div>
