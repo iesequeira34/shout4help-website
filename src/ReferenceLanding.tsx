@@ -867,7 +867,7 @@ function TesterCta({
                   initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -8 }}
-                  className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800"
+                  className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 w-fit"
                 >
                   Add <code>VITE_ANDROID_APP_URL</code> or <code>VITE_PLAY_TEST_URL</code> before
                   publishing this tester flow.
@@ -878,7 +878,7 @@ function TesterCta({
                   initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -8 }}
-                  className={`rounded-2xl px-4 py-3 text-sm ${feedback.tone === 'error'
+                  className={`rounded-2xl px-4 py-3 text-sm w-fit ${feedback.tone === 'error'
                     ? 'border border-rose-300 bg-rose-50 text-rose-700'
                     : feedback.tone === 'info'
                       ? 'border border-blue-200 bg-blue-50 text-blue-700'
