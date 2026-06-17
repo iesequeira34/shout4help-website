@@ -167,7 +167,7 @@ const cases = [
     image: hikerImage,
     stats: [
       { value: '250K+', label: 'search & rescue incidents yearly' },
-      { value: 'Offline', label: 'GPS caching built in' },
+      { value: 'Offline', label: 'GPS tracking' },
     ],
     bullets: [
       'Detection range of about 10ft',
