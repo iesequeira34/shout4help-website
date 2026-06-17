@@ -158,27 +158,6 @@ const cases = [
     ],
   },
   {
-    id: 'campus',
-    label: 'Campus Safety',
-    emoji: '🎓',
-    color: '#7C3AED',
-    lightColor: '#F5F3FF',
-    title: 'College Campus Security',
-    subtitle: 'For students in large or unfamiliar campuses',
-    description:
-      'Students navigating large campuses after dark face real risks. Shout4Help integrates with existing campus emergency networks and provides instant personal alerts even without cellular data.',
-    image: campusImage,
-    stats: [
-      { value: '55%', label: 'students feel unsafe on campus at night' },
-      { value: '3 contacts', label: 'can be alerted sequentially' },
-    ],
-    bullets: [
-      'Works across campus Wi-Fi offline',
-      'Integrates with campus security',
-      'Peer-to-peer alert networks',
-    ],
-  },
-  {
     id: 'outdoor',
     label: 'Outdoor Adventures',
     emoji: '🏔️',
@@ -252,17 +231,15 @@ function Navbar() {
 
   return (
     <nav
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        scrolled ? 'bg-white shadow-md' : 'bg-transparent'
-      }`}
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${scrolled ? 'bg-white shadow-md' : 'bg-transparent'
+        }`}
     >
       <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
         <button type="button" onClick={() => scrollTo('top')} className="flex items-center gap-2">
           <BrandMark />
           <span
-            className={`text-xl font-bold tracking-tight transition-colors ${
-              scrolled ? 'text-gray-900' : 'text-white'
-            }`}
+            className={`text-xl font-bold tracking-tight transition-colors ${scrolled ? 'text-gray-900' : 'text-white'
+              }`}
           >
             <span style={scrolled ? { color: '#2563EB' } : { color: '#BFDBFE' }}>Shout</span>
             <span style={{ color: '#FF3030' }}>
@@ -277,9 +254,8 @@ function Navbar() {
               key={id}
               type="button"
               onClick={() => scrollTo(id)}
-              className={`text-sm font-medium transition-colors hover:text-[#2563EB] ${
-                scrolled ? 'text-gray-600' : 'text-white/90'
-              }`}
+              className={`text-sm font-medium transition-colors hover:text-[#2563EB] ${scrolled ? 'text-gray-600' : 'text-white/90'
+                }`}
             >
               {id === 'features'
                 ? 'Features'
@@ -362,9 +338,8 @@ function Hero() {
 
       <div className="relative z-10 max-w-7xl mx-auto px-6 pt-24 pb-16 grid md:grid-cols-2 gap-12 items-center">
         <div
-          className={`transition-all duration-700 ${
-            visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
-          }`}
+          className={`transition-all duration-700 ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+            }`}
         >
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/10 border border-white/20 mb-6">
             <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
@@ -416,9 +391,8 @@ function Hero() {
         </div>
 
         <div
-          className={`flex justify-center transition-all duration-700 delay-200 ${
-            visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-12'
-          }`}
+          className={`flex justify-center transition-all duration-700 delay-200 ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-12'
+            }`}
         >
           <div className="relative">
             <div className="absolute inset-0 bg-blue-400/30 blur-3xl rounded-full scale-90" />
@@ -869,11 +843,10 @@ function TesterCta({
             <button
               type="submit"
               disabled={!isValidGmail || isSubmitting}
-              className={`rounded-2xl px-8 py-4 font-bold text-base transition-all duration-200 sm:min-w-60 ${
-                !isValidGmail || isSubmitting
+              className={`rounded-2xl px-8 py-4 font-bold text-base transition-all duration-200 sm:min-w-60 ${!isValidGmail || isSubmitting
                   ? 'bg-blue-200 text-white cursor-not-allowed'
                   : 'bg-[#2563EB] text-white shadow-xl hover:-translate-y-1 hover:bg-[#1D4ED8]'
-              }`}
+                }`}
             >
               {isSubmitting ? 'Adding to group...' : 'Join Testers Group'}
             </button>
@@ -898,13 +871,12 @@ function TesterCta({
                   initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -8 }}
-                  className={`rounded-2xl px-4 py-3 text-sm ${
-                    feedback.tone === 'error'
+                  className={`rounded-2xl px-4 py-3 text-sm ${feedback.tone === 'error'
                       ? 'border border-rose-300 bg-rose-50 text-rose-700'
                       : feedback.tone === 'info'
                         ? 'border border-blue-200 bg-blue-50 text-blue-700'
                         : 'border border-emerald-200 bg-emerald-50 text-emerald-700'
-                  }`}
+                    }`}
                 >
                   {feedback.message}
                 </motion.p>
@@ -991,9 +963,9 @@ function Footer() {
                 href="https://iesequeira34.github.io/shout4help-privacy-policy/"
                 className="inline-flex items-center gap-3 text-gray-500 text-sm hover:text-white transition-colors"
               >
-              <span className="text-gray-500 text-sm cursor-pointer hover:text-white transition-colors">
-                Privacy Policy
-              </span>
+                <span className="text-gray-500 text-sm cursor-pointer hover:text-white transition-colors">
+                  Privacy Policy
+                </span>
               </a>
             </div>
           </div>
@@ -1022,7 +994,7 @@ function Footer() {
         <div className="border-t border-gray-800 pt-6 flex flex-col md:flex-row items-center justify-between gap-4">
           <p className="text-gray-600 text-sm">© 2026 Shout4Help. All rights reserved.</p>
           <p className="text-gray-600 text-sm">Developed by Ian Sequeira.</p>
-          </div>
+        </div>
       </div>
     </footer>
   )
