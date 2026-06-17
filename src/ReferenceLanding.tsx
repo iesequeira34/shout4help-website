@@ -661,14 +661,14 @@ function UseCases() {
           </p>
         </div>
 
-        <div className="grid grid-cols-4 gap-2 sm:gap-3 mb-10 max-w-sm sm:max-w-2xl mx-auto">
+        <div className="flex justify-center gap-2 sm:gap-3 mb-10 mx-auto">
           {cases.map((useCase, index) => (
             <button
               key={useCase.id}
               type="button"
               onClick={() => setActive(index)}
               aria-label={useCase.label}
-              className="min-w-0 w-full max-w-[4.5rem] sm:max-w-[7.25rem] mx-auto rounded-xl sm:rounded-2xl border-2 transition-all duration-200 px-1.5 py-2 sm:px-3.5 sm:py-3.5 text-center"
+              className="min-w-0 max-w-[4.5rem] sm:max-w-[7.25rem] rounded-xl sm:rounded-2xl border-2 transition-all duration-200 px-1.5 py-2 sm:px-3.5 sm:py-3.5 text-center"
               style={{
                 fontFamily: "'Plus Jakarta Sans', sans-serif",
                 backgroundColor: active === index ? `${useCase.color}12` : '#FFFFFF',
