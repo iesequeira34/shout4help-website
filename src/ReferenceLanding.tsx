@@ -187,6 +187,7 @@ type TesterCtaProps = {
   email: string
   feedback: FeedbackState | null
   isSubmitting: boolean
+  submitted: boolean
   showAndroidLink: boolean
   didCopyAndroidLink: boolean
   isAndroidAppConfigured: boolean
@@ -689,11 +690,17 @@ function UseCases() {
           className="grid lg:grid-cols-2 rounded-3xl overflow-hidden shadow-xl transition-all"
           style={{ border: `1px solid ${current.color}20` }}
         >
-          <div className="relative h-72 lg:h-auto overflow-hidden">
+          <div className="relative h-72 sm:h-96 lg:h-[420px] overflow-hidden">
             <img
               src={current.image}
               alt={current.title}
               className="w-full h-full object-cover transition-transform duration-700 hover:scale-105"
+            />
+            <div
+              className="absolute inset-0"
+              style={{
+                background: 'linear-gradient(to right, rgba(0,0,0,0.55), rgba(0,0,0,0.25) 60%, rgba(0,0,0,0.05))',
+              }}
             />
             <div
               className="absolute inset-0"
@@ -767,6 +774,7 @@ function TesterCta({
   email,
   feedback,
   isSubmitting,
+  submitted,
   showAndroidLink,
   didCopyAndroidLink,
   isAndroidAppConfigured,
@@ -819,33 +827,37 @@ function TesterCta({
           onSubmit={onSubmit}
           className="mx-auto max-w-3xl rounded-3xl bg-white p-6 sm:p-8 text-left shadow-2xl"
         >
-          <label htmlFor="gmail" className="block text-sm font-semibold text-gray-700 mb-3">
-            Gmail ID
-          </label>
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-stretch">
-            <input
-              id="gmail"
-              name="gmail"
-              type="email"
-              inputMode="email"
-              autoComplete="email"
-              placeholder="yourname@gmail.com"
-              value={email}
-              onChange={(event) => onEmailChange(event.target.value)}
-              className="min-w-0 flex-1 rounded-2xl border border-gray-200 bg-gray-50 px-4 py-4 text-gray-900 outline-none focus:border-[#2563EB] focus:bg-white"
-            />
+          {!submitted && (
+            <>
+              <label htmlFor="gmail" className="block text-sm font-semibold text-gray-700 mb-3">
+                Gmail ID
+              </label>
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-stretch">
+                <input
+                  id="gmail"
+                  name="gmail"
+                  type="email"
+                  inputMode="email"
+                  autoComplete="email"
+                  placeholder="yourname@gmail.com"
+                  value={email}
+                  onChange={(event) => onEmailChange(event.target.value)}
+                  className="min-w-0 flex-1 rounded-2xl border border-gray-200 bg-gray-50 px-4 py-4 text-gray-900 outline-none focus:border-[#2563EB] focus:bg-white"
+                />
 
-            <button
-              type="submit"
-              disabled={!isValidGmail || isSubmitting}
-              className={`rounded-2xl px-8 py-4 font-bold text-base transition-all duration-200 sm:min-w-60 ${!isValidGmail || isSubmitting
-                ? 'bg-blue-200 text-white cursor-not-allowed'
-                : 'bg-[#2563EB] text-white shadow-xl hover:-translate-y-1 hover:bg-[#1D4ED8]'
-                }`}
-            >
-              {isSubmitting ? 'Adding to group...' : 'Join Testers Group'}
-            </button>
-          </div>
+                <button
+                  type="submit"
+                  disabled={!isValidGmail || isSubmitting}
+                  className={`rounded-2xl px-8 py-4 font-bold text-base transition-all duration-200 sm:min-w-60 ${!isValidGmail || isSubmitting
+                    ? 'bg-blue-200 text-white cursor-not-allowed'
+                    : 'bg-[#2563EB] text-white shadow-xl hover:-translate-y-1 hover:bg-[#1D4ED8]'
+                    }`}
+                >
+                  {isSubmitting ? 'Adding to group...' : 'Join Testers Group'}
+                </button>
+              </div>
+            </>
+          )}
 
           <div aria-live="polite" className="mt-5 min-h-7">
             <AnimatePresence mode="wait">
@@ -999,6 +1011,7 @@ export default function ReferenceLanding() {
   const [email, setEmail] = useState('')
   const [feedback, setFeedback] = useState<FeedbackState | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [submitted, setSubmitted] = useState(false)
   const [showAndroidLink, setShowAndroidLink] = useState(false)
   const [didCopyAndroidLink, setDidCopyAndroidLink] = useState(false)
   const copiedTimerRef = useRef<number | null>(null)
@@ -1028,6 +1041,7 @@ export default function ReferenceLanding() {
         message: 'Please enter a valid Gmail address ending in @gmail.com.',
       })
       setShowAndroidLink(false)
+      setSubmitted(false)
       return
     }
 
@@ -1056,6 +1070,7 @@ export default function ReferenceLanding() {
           message,
         })
         setShowAndroidLink(false)
+        setSubmitted(false)
         return
       }
 
@@ -1064,6 +1079,7 @@ export default function ReferenceLanding() {
         message,
       })
       setShowAndroidLink(true)
+      setSubmitted(true)
       setEmail('')
     } catch {
       setFeedback({
@@ -1071,6 +1087,7 @@ export default function ReferenceLanding() {
         message: 'We could not reach the signup service. Please try again later.',
       })
       setShowAndroidLink(false)
+      setSubmitted(false)
     } finally {
       setIsSubmitting(false)
     }
@@ -1121,8 +1138,10 @@ export default function ReferenceLanding() {
         isAndroidAppConfigured={isAndroidAppConfigured}
         androidAppUrl={androidAppUrl}
         isValidGmail={isValidGmail}
+        submitted={submitted}
         onEmailChange={(value) => {
           setEmail(value)
+          setSubmitted(false)
           if (feedback?.tone === 'error') {
             setFeedback(null)
           }
