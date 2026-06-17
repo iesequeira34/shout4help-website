@@ -23,7 +23,7 @@ const featureCards = [
     accent: '#2563EB',
     title: 'Voice-Triggered Alerts',
     description:
-      'Shout4Help listens passively for keywords like "help" or "emergency." The moment it detects a trigger phrase, the emergency flow begins automatically — no screen interaction needed.',
+      'Shout4Help listens passively for keywords like "buddy help" or "buddy emergency." The moment it detects a trigger phrase, the emergency flow begins automatically — no screen interaction needed.',
     tag: 'Core Feature',
   },
   {
@@ -39,7 +39,7 @@ const featureCards = [
     icon: '📍',
     color: '#FFF7ED',
     accent: '#EA580C',
-    title: 'Live Location Sharing',
+    title: 'Location Sharing',
     description:
       'Your precise GPS coordinates are embedded directly into every SMS alert. Responders and trusted contacts see your exact position on a map without needing the app themselves.',
     tag: 'Real-time',
@@ -150,7 +150,6 @@ const cases = [
       { value: 'Zero', label: 'taps needed to trigger an alert' },
     ],
     bullets: [
-      'Designed for low-tech comfort',
       'Family notified with full context',
       'Works offline at home',
     ],
@@ -171,8 +170,7 @@ const cases = [
       { value: 'Offline', label: 'GPS caching built in' },
     ],
     bullets: [
-      'Satellite location caching',
-      'Queued alerts on reconnect',
+      'Detection range of about 10ft',
       'Battery-optimised background mode',
     ],
   },
@@ -798,7 +796,7 @@ function TesterCta({
           className="text-white mb-4"
           style={{ fontSize: 'clamp(2rem, 5vw, 3.5rem)', fontWeight: 800, lineHeight: 1.15 }}
         >
-          Enter your Gmail,
+          Enter your Gmail ID,
           <span
             style={{
               background: 'linear-gradient(90deg, #93C5FD, #BFDBFE)',
@@ -807,7 +805,7 @@ function TesterCta({
             }}
           >
             {' '}
-            then open the app on Play.
+            then open the app on Play Store.
           </span>
         </h2>
         <p
@@ -842,8 +840,8 @@ function TesterCta({
               type="submit"
               disabled={!isValidGmail || isSubmitting}
               className={`rounded-2xl px-8 py-4 font-bold text-base transition-all duration-200 sm:min-w-60 ${!isValidGmail || isSubmitting
-                  ? 'bg-blue-200 text-white cursor-not-allowed'
-                  : 'bg-[#2563EB] text-white shadow-xl hover:-translate-y-1 hover:bg-[#1D4ED8]'
+                ? 'bg-blue-200 text-white cursor-not-allowed'
+                : 'bg-[#2563EB] text-white shadow-xl hover:-translate-y-1 hover:bg-[#1D4ED8]'
                 }`}
             >
               {isSubmitting ? 'Adding to group...' : 'Join Testers Group'}
@@ -870,10 +868,10 @@ function TesterCta({
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -8 }}
                   className={`rounded-2xl px-4 py-3 text-sm ${feedback.tone === 'error'
-                      ? 'border border-rose-300 bg-rose-50 text-rose-700'
-                      : feedback.tone === 'info'
-                        ? 'border border-blue-200 bg-blue-50 text-blue-700'
-                        : 'border border-emerald-200 bg-emerald-50 text-emerald-700'
+                    ? 'border border-rose-300 bg-rose-50 text-rose-700'
+                    : feedback.tone === 'info'
+                      ? 'border border-blue-200 bg-blue-50 text-blue-700'
+                      : 'border border-emerald-200 bg-emerald-50 text-emerald-700'
                     }`}
                 >
                   {feedback.message}
