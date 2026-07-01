@@ -207,8 +207,19 @@ function BrandMark() {
   )
 }
 
+const NAV_OFFSET = 80 // fixed navbar height, in px
+
 function scrollToSection(id: string) {
-  document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' })
+  if (id === 'top') {
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+    return
+  }
+
+  const el = document.getElementById(id)
+  if (!el) return
+
+  const top = el.getBoundingClientRect().top + window.scrollY - NAV_OFFSET
+  window.scrollTo({ top: Math.max(top, 0), behavior: 'smooth' })
 }
 
 function Navbar() {
