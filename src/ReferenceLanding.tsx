@@ -523,9 +523,108 @@ function Features() {
   )
 }
 
+function HowItWorksStep({
+  step,
+  isLast,
+  isActive,
+  onHoverStart,
+  onHoverEnd,
+}: {
+  step: (typeof steps)[number]
+  isLast: boolean
+  isActive: boolean
+  onHoverStart: () => void
+  onHoverEnd: () => void
+}) {
+  const [expanded, setExpanded] = useState(false)
+  const [isTruncated, setIsTruncated] = useState(false)
+  const textRef = useRef<HTMLParagraphElement>(null)
+
+  useEffect(() => {
+    const el = textRef.current
+    if (!el) return
+
+    const measure = () => {
+      if (expanded) return
+      setIsTruncated(el.scrollHeight > el.clientHeight + 1)
+    }
+
+    measure()
+
+    const observer = new ResizeObserver(measure)
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [expanded, step.description])
+
+  return (
+    <div
+      onMouseEnter={onHoverStart}
+      onMouseLeave={onHoverEnd}
+      className="relative flex gap-5 cursor-default group"
+    >
+      <div className="flex flex-col items-center flex-shrink-0">
+        <div
+          className="w-10 h-10 rounded-2xl flex items-center justify-center text-sm font-bold transition-all duration-300 z-10"
+          style={{
+            backgroundColor: isActive ? '#2563EB' : '#EFF6FF',
+            color: isActive ? 'white' : '#2563EB',
+          }}
+        >
+          {step.number}
+        </div>
+        {!isLast ? (
+          <div
+            className="w-0.5 flex-1 my-1 transition-all duration-300"
+            style={{
+              backgroundColor: isActive ? '#2563EB' : '#E2E8F0',
+              minHeight: '2rem',
+            }}
+          />
+        ) : null}
+      </div>
+
+      <div
+        className="flex-1 rounded-2xl p-5 border mb-3 transition-all duration-300"
+        style={{
+          backgroundColor: isActive ? '#EFF6FF' : '#F8FAFC',
+          borderColor: isActive ? '#BFDBFE' : '#E2E8F0',
+          boxShadow: isActive ? '0 8px 30px rgba(37,99,235,0.10)' : 'none',
+        }}
+      >
+        <h3
+          className="text-gray-900 mb-1"
+          style={{ fontSize: '1rem', fontWeight: 700, lineHeight: 1.35 }}
+        >
+          {step.title}
+        </h3>
+        <p
+          ref={textRef}
+          className="text-gray-500 text-sm leading-relaxed"
+          style={{
+            display: expanded ? 'block' : '-webkit-box',
+            WebkitLineClamp: expanded ? 'unset' : 2,
+            WebkitBoxOrient: 'vertical' as const,
+            overflow: expanded ? 'visible' : 'hidden',
+          }}
+        >
+          {step.description}
+        </p>
+        {isTruncated || expanded ? (
+          <button
+            type="button"
+            onClick={() => setExpanded((currentExpanded) => !currentExpanded)}
+            className="mt-2 text-xs font-semibold text-[#2563EB] hover:text-[#1D4ED8]"
+          >
+            {expanded ? 'Show less' : 'Read more'}
+          </button>
+        ) : null}
+      </div>
+    </div>
+  )
+}
+
 function HowItWorks() {
   const [activeStep, setActiveStep] = useState<number | null>(null)
-  const [expandedSteps, setExpandedSteps] = useState<Record<number, boolean>>({})
 
   return (
     <section id="how-it-works" className="py-24 bg-white">
@@ -558,75 +657,14 @@ function HowItWorks() {
 
           <div className="lg:col-span-3 flex flex-col">
             {steps.map((step, index) => (
-              <div
+              <HowItWorksStep
                 key={step.number}
-                onMouseEnter={() => setActiveStep(index)}
-                onMouseLeave={() => setActiveStep(null)}
-                className="relative flex gap-5 cursor-default group"
-              >
-                <div className="flex flex-col items-center flex-shrink-0">
-                  <div
-                    className="w-10 h-10 rounded-2xl flex items-center justify-center text-sm font-bold transition-all duration-300 z-10"
-                    style={{
-                      backgroundColor: activeStep === index ? '#2563EB' : '#EFF6FF',
-                      color: activeStep === index ? 'white' : '#2563EB',
-                    }}
-                  >
-                    {step.number}
-                  </div>
-                  {index < steps.length - 1 ? (
-                    <div
-                      className="w-0.5 flex-1 my-1 transition-all duration-300"
-                      style={{
-                        backgroundColor: activeStep === index ? '#2563EB' : '#E2E8F0',
-                        minHeight: '2rem',
-                      }}
-                    />
-                  ) : null}
-                </div>
-
-                <div
-                  className="flex-1 rounded-2xl p-5 border mb-3 transition-all duration-300"
-                  style={{
-                    backgroundColor: activeStep === index ? '#EFF6FF' : '#F8FAFC',
-                    borderColor: activeStep === index ? '#BFDBFE' : '#E2E8F0',
-                    boxShadow:
-                      activeStep === index ? '0 8px 30px rgba(37,99,235,0.10)' : 'none',
-                  }}
-                >
-                  <h3
-                    className="text-gray-900 mb-1"
-                    style={{ fontSize: '1rem', fontWeight: 700, lineHeight: 1.35 }}
-                  >
-                    {step.title}
-                  </h3>
-                  <p
-                    className="text-gray-500 text-sm leading-relaxed"
-                    style={{
-                      display: expandedSteps[index] ? 'block' : '-webkit-box',
-                      WebkitLineClamp: expandedSteps[index] ? 'unset' : 2,
-                      WebkitBoxOrient: 'vertical' as const,
-                      overflow: expandedSteps[index] ? 'visible' : 'hidden',
-                    }}
-                  >
-                    {step.description}
-                  </p>
-                  {step.description.length > 90 ? (
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setExpandedSteps((currentExpandedSteps) => ({
-                          ...currentExpandedSteps,
-                          [index]: !currentExpandedSteps[index],
-                        }))
-                      }
-                      className="mt-2 text-xs font-semibold text-[#2563EB] hover:text-[#1D4ED8]"
-                    >
-                      {expandedSteps[index] ? 'Show less' : 'Read more'}
-                    </button>
-                  ) : null}
-                </div>
-              </div>
+                step={step}
+                isLast={index === steps.length - 1}
+                isActive={activeStep === index}
+                onHoverStart={() => setActiveStep(index)}
+                onHoverEnd={() => setActiveStep(null)}
+              />
             ))}
           </div>
         </div>
