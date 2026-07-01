@@ -1,7 +1,7 @@
 import { AnimatePresence, motion } from 'framer-motion'
 import type { FormEvent } from 'react'
 import { useEffect, useRef, useState } from 'react'
-import { Check, ChevronDown, Copy, ExternalLink, Mail, Menu, Phone, X } from 'lucide-react'
+import { Check, Copy, ExternalLink, Mail, Menu, Phone, X } from 'lucide-react'
 
 import mainScreen from './assets/main_screen.jpg'
 import logo from './assets/logo.svg'
@@ -454,14 +454,6 @@ function Hero() {
           </div>
         </div>
       </div>
-
-      <button
-        type="button"
-        onClick={() => scrollToSection('features')}
-        className="absolute bottom-8 left-1/2 -translate-x-1/2 text-white/60 hover:text-white/90 transition-colors animate-bounce"
-      >
-        <ChevronDown size={32} />
-      </button>
     </section>
   )
 }
